@@ -20,9 +20,9 @@ html {
 }
 
 :root {
-  --pomodoro: hsl(223, 25%, 40%);
-  --repeaters: hsl(48, 23%, 40%);
-  --maxHang: hsl(105, 16%, 40%);
+  --ready: hsl(61, 97%, 74%);
+  --hang: hsl(2, 41%, 47%);
+  --rest: hsl(105, 48%, 39%);
 }
 
 body {

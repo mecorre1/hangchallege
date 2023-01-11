@@ -12,31 +12,47 @@
       <progress id="js-progress" value="0"></progress>
       <div class="progress-bar"></div>
       <div class="timer">
-        <div class="button-group mode-buttons" id="js-mode-buttons">
-          <button
-            data-mode="maxHang"
-            class="button active mode-button"
-            id="js-pomodoro"
-          >
-            Max Hang
-          </button>
-          <button
-            data-mode="repeaters"
-            class="button mode-button"
-            id="js-short-break"
-          >
-            Repeaters
-          </button>
-          <button
-            data-mode="longBreak"
-            class="button mode-button"
-            id="js-long-break"
-          >
-            Long break
-          </button>
-        </div>
+          <div class="button-group scenario-buttons" id="js-scenario-buttons">
+            <button
+              data-scenario="repeaters"
+              class="button scenario-button"
+              id="js-repeaters"
+            >
+              Repeaters
+            </button>
+            <button
+              data-scenario="maxHang"
+              class="button scenario-button"
+              id="js-max-hang"
+            >
+              Max Hang
+            </button>
+          </div>
+          <div class="button-group mode-buttons" id="js-mode-buttons">
+            <button
+              data-mode="ready"
+              class="button active mode-button"
+              id="js-pomodoro"
+            >
+              Get Ready
+            </button>
+            <button
+              data-mode="hang"
+              class="button mode-button"
+              id="js-short-break"
+            >
+              Hang
+            </button>
+            <button
+              data-mode="rest"
+              class="button mode-button"
+              id="js-long-break"
+            >
+              Rest
+            </button>
+          </div>
         <div class="clock" id="js-clock">
-          <span id="js-minutes">25</span>
+          <span id="js-minutes">00</span>
           <span class="separator">:</span>
           <span id="js-seconds">00</span>
         </div>

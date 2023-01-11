@@ -1,20 +1,32 @@
-const timer = {
-    repeaters: {
-        prepare: 20,
-        hang: 7,
-        shortBreak: 3
-    },
-    maxHangs: {
-        prepare: 20,
-        hang: 10,
-        shortBreak: 180
-    }
-};
 
+    
+
+    const scenarios = {
+        repeaters : {
+        ready: 20,
+        hang: 7,
+        shortBreak: 3,
+        longBreak: 180,
+        longBreakInterval: 6,
+        sets: 5
+      },
+        maxHangs : {
+        hang: 10,
+        shortBreak: 120,
+        longBreak: 180,
+        longBreakInterval: 5,
+        sets: 5
+      },
+        
+    };
+    var timer = scenarios['repeaters'];
 let interval;
 
 const modeButtons = document.querySelector('#js-mode-buttons');
 modeButtons.addEventListener('click', handleMode);
+
+const scenarioButtons = document.querySelector('#js-scenario-buttons');
+scenarioButtons.addEventListener('click', handleScenario);
 
 //trigger startTimer when clicking start button
 const mainButton = document.getElementById('js-btn');
@@ -24,6 +36,18 @@ mainButton.addEventListener('click', () => {
     startTimer();
   }
 });
+
+function handleScenario(event){
+    const {scenario} = event.target.dataset;
+
+    if(!scenario) return
+
+    timer = scenarios[scenario]
+    
+    switchMode('ready');
+    console.log('called handle mode');
+}
+
 
 function handleMode(event) {
     const {
@@ -37,9 +61,9 @@ function handleMode(event) {
 
 function switchMode(mode) {
     timer.remainingTime = {
-        total: timer[mode].prepare,
+        total: timer[mode],
         minutes: 0,
-        seconds: timer[mode].prepare,
+        seconds: timer[mode],
     };
 
     document
