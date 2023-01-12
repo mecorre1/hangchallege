@@ -3,7 +3,7 @@
 
     const scenarios = {
         repeaters : {
-        ready: 20,
+        ready: 1,
         hang: 7,
         shortBreak: 3,
         longBreak: 180,
@@ -11,7 +11,8 @@
         sets: 5
       },
         maxHangs : {
-        hang: 10,
+        ready:1,
+          hang: 10,
         shortBreak: 120,
         longBreak: 180,
         longBreakInterval: 5,
@@ -27,6 +28,10 @@ modeButtons.addEventListener('click', handleMode);
 
 const scenarioButtons = document.querySelector('#js-scenario-buttons');
 scenarioButtons.addEventListener('click', handleScenario);
+
+document.addEventListener('DOMContentLoaded', () => {
+  handleScenario('repeaters');
+});
 
 //trigger startTimer when clicking start button
 const mainButton = document.getElementById('js-btn');
@@ -44,6 +49,7 @@ function handleScenario(event){
 
     timer = scenarios[scenario]
     
+    stopTimer();
     switchMode('ready');
     console.log('called handle mode');
 }
@@ -56,6 +62,7 @@ function handleMode(event) {
 
     if (!mode) return;
 
+
     switchMode(mode);
 }
 
@@ -65,6 +72,8 @@ function switchMode(mode) {
         minutes: 0,
         seconds: timer[mode],
     };
+
+    timer.mode = mode;
 
     document
         .querySelectorAll('button[data-mode]')
@@ -86,6 +95,22 @@ function startTimer() {
       total = timer.remainingTime.total;
       if (total <= 0) {
         clearInterval(interval);
+        switch (timer.mode) {
+          case 'ready':
+            switchMode('hang')
+            startTimer()
+            break;
+          case 'hang':
+            switchMode('shortBreak')
+            startTimer()
+            break;
+          case 'shortBreak':
+            switchMode('ready')
+            startTimer()
+            break;
+          default:
+            break;
+        }
       }
     }, 1000);
   }
@@ -116,4 +141,12 @@ function getRemainingTime(endTime) {
       minutes,
       seconds,
     };
+  }
+
+  function stopTimer() {
+    clearInterval(interval);
+    
+    mainButton.dataset.action = 'start';
+    mainButton.textContent = 'start';
+    mainButton.classList.remove('active');
   }

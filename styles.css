@@ -22,7 +22,7 @@ html {
 :root {
   --ready: hsl(61, 97%, 74%);
   --hang: hsl(2, 41%, 47%);
-  --rest: hsl(105, 48%, 39%);
+  --shortBreak: hsl(105, 48%, 39%);
 }
 
 body {
