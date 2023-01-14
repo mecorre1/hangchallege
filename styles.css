@@ -20,7 +20,7 @@ html {
 }
 
 :root {
-  --ready: hsl(61, 97%, 74%);
+  --ready: hsl(58, 100%, 81%);
   --hang: hsl(2, 41%, 47%);
   --shortBreak: hsl(105, 48%, 39%);
 }
@@ -81,7 +81,21 @@ progress::-webkit-progress-value {
   background: none;
 }
 
-.mode-button.active {
+.scenario-button {
+  font-size: 30px;
+  height: 42px;
+  cursor: pointer;
+  box-shadow: none;
+  font-weight: 300;
+  color: rgb(7, 7, 7);
+  border: 1px solid transparent;
+  margin: 0px;
+  border-radius: 4px;
+  padding: 2px 12px;
+  background: none;
+}
+
+.active {
   border-color: #fff;
 }
 

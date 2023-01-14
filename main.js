@@ -30,15 +30,24 @@ const scenarioButtons = document.querySelector('#js-scenario-buttons');
 scenarioButtons.addEventListener('click', handleScenario);
 
 document.addEventListener('DOMContentLoaded', () => {
-  handleScenario('repeaters');
+  document.querySelector(`[data-scenario="repeaters"]`).click();
 });
+
+const progressBar = document.querySelector('#js-progress');
 
 //trigger startTimer when clicking start button
 const mainButton = document.getElementById('js-btn');
 mainButton.addEventListener('click', () => {
   const { action } = mainButton.dataset;
   if (action === 'start') {
+    mainButton.dataset.action = 'stop';
+    mainButton.textContent = 'stop';
     startTimer();
+  }
+  else if (action == 'stop') {
+    mainButton.dataset.action = 'start';
+    mainButton.textContent = 'start';
+    stopTimer();
   }
 });
 
@@ -52,6 +61,11 @@ function handleScenario(event){
     stopTimer();
     switchMode('ready');
     console.log('called handle mode');
+
+    document
+        .querySelectorAll('button[data-scenario]')
+        .forEach(e => e.classList.remove('active'));
+    document.querySelector(`[data-scenario="${scenario}"]`).classList.add('active');
 }
 
 
@@ -126,6 +140,13 @@ function updateClock() {
     const sec = document.getElementById('js-seconds');
     min.textContent = minutes;
     sec.textContent = seconds;
+    
+    updateProgress();
+}
+
+function updateProgress() {
+  progressBar.value = 1 - Math.round(timer.remainingTime.total/timer[timer.mode]*100)/100
+
 }
 
 function getRemainingTime(endTime) {
