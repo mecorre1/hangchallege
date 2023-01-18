@@ -21,6 +21,7 @@
         
     };
     var timer = scenarios['repeaters'];
+
 let interval;
 
 const modeButtons = document.querySelector('#js-mode-buttons');
@@ -43,12 +44,31 @@ mainButton.addEventListener('click', () => {
     mainButton.dataset.action = 'stop';
     mainButton.textContent = 'stop';
     startTimer();
+    timer.reps = 0;
   }
   else if (action == 'stop') {
     mainButton.dataset.action = 'start';
     mainButton.textContent = 'start';
     stopTimer();
   }
+
+});
+
+//trigger pause and start when clicking pause button
+const mainButtonPause = document.getElementById('js-btn-pause');
+mainButtonPause.addEventListener('click', () => {
+  const { action } = mainButtonPause.dataset;
+  if (action === 'pause') {
+    mainButtonPause.dataset.action = 'pause';
+    mainButtonPause.textContent = 'pause';
+    pauseTimer();
+  }
+  else if (action == 'resume') {
+    mainButtonPause.dataset.action = 'resume';
+    mainButtonPause.textContent = 'resume';
+    startTimer();
+  }
+
 });
 
 function handleScenario(event){
@@ -60,7 +80,6 @@ function handleScenario(event){
     
     stopTimer();
     switchMode('ready');
-    console.log('called handle mode');
 
     document
         .querySelectorAll('button[data-scenario]')
@@ -99,6 +118,10 @@ function switchMode(mode) {
 }
 
 function startTimer() {
+    mainButtonPause.classList.remove('hidden');
+    mainButtonPause.textContent = 'pause';
+    mainButtonPause.dataset.action = 'pause';
+
     let { total } = timer.remainingTime;
     const endTime = Date.parse(new Date()) + total * 1000;
   
@@ -121,6 +144,7 @@ function startTimer() {
           case 'shortBreak':
             switchMode('ready')
             startTimer()
+            timer.reps++;
             break;
           default:
             break;
@@ -145,7 +169,7 @@ function updateClock() {
 }
 
 function updateProgress() {
-  progressBar.value = 1 - Math.round(timer.remainingTime.total/timer[timer.mode]*100)/100
+  progressBar.value = 1 - timer.remainingTime.total/timer[timer.mode]
 
 }
 
@@ -166,8 +190,20 @@ function getRemainingTime(endTime) {
 
   function stopTimer() {
     clearInterval(interval);
-    
+
+    document.querySelector(`[data-mode="ready"]`).click();
+
     mainButton.dataset.action = 'start';
     mainButton.textContent = 'start';
     mainButton.classList.remove('active');
+    mainButtonPause.classList.add('hidden');
+    mainButtonPause.dataset.action = 'pause';
+    mainButtonPause.textContent = 'pause';
+  }
+
+  function pauseTimer() {
+    clearInterval(interval);
+    mainButtonPause.dataset.action = 'resume';
+    mainButtonPause.textContent = 'resume';
+    mainButtonPause.classList.remove('active');
   }
