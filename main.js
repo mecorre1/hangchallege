@@ -5,7 +5,8 @@ const scenarios = {
     shortBreak: 3,
     longBreak: 180,
     longBreakInterval: 6,
-    sets: 5
+    sets: 5,
+    scenario:'repeaters'
   },
   maxHangs: {
     ready: 1,
@@ -13,20 +14,24 @@ const scenarios = {
     shortBreak: 120,
     longBreak: 180,
     longBreakInterval: 5,
-    sets: 5
+    sets: 5,
+    scenario:'maxHangs'
   },
   densityHangs: {
     //we will start a bit yolo and the refine
     ready: 1, //ready will match half of hang after the first hang and will be reset after de 3
-    hang: -1, //-1 triggers upward counting 
+    hang: 0, // start at 0. Up count is used.
     shortBreak: 0, //shortBreak is hang/2
     longBreak: 180,
     longBreakHangThreshold: 10, //if hang < longBreakHangThreshold longBreak is triggered
-    longBreakSetThreshold: 3 //if sets >= longBreakSetThreshold longBreak is triggered
+    longBreakRepThreshold: 3, //if sets >= longBreakSetThreshold longBreak is triggered
+    maxSetsPerHold : 2,
+    scenario:'densityHangs'
   }
 
 };
 var timer = scenarios['repeaters'];
+timer.progress = [];
 
 let interval; //timer interval, reset at each stop, paused at paused, resumes at resume.
 
@@ -53,6 +58,9 @@ mainButton.addEventListener('click', () => {
     mainButton.textContent = 'stop';
     startCountDownTimer();
     timer.reps = 0;
+    timer.sets = 0;
+    timer.totalSets = 0;
+    timer.progress = [];
   } else if (action == 'stop') {
     mainButton.dataset.action = 'start';
     mainButton.textContent = 'start';
@@ -71,12 +79,32 @@ mainButtonPause.addEventListener('click', () => {
     mainButtonPause.dataset.action = 'pause';
     mainButtonPause.textContent = 'pause';
     pauseTimer();
-  } else if (action == 'resume') {
+  } else if (action === 'resume') {
     mainButtonPause.dataset.action = 'resume';
     mainButtonPause.textContent = 'resume';
     startCountDownTimer();
   }
 });
+
+//trigger breakTimer when clicking of fell button or tapping the space bar
+const mainButtonFell = document.getElementById('js-btn-fell');
+mainButtonFell.addEventListener('click', () => {
+  const {
+    action
+  } = mainButtonFell.dataset;
+  if (action === 'break') {
+    breakTimer();
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  if (e.key === ' ' && !mainButtonFell.classList.contains('hidden')) {
+    e.preventDefault();
+    breakTimer();
+  }
+});
+
+
 
 function handleScenario(event) {
   const {
@@ -109,12 +137,9 @@ function handleMode(event) {
 }
 
 function switchMode(mode) {
-  timer.remainingTime = {
-    total: timer[mode],
-    minutes: 0,
-    seconds: timer[mode],
-  };
+  const endTime = Date.parse(new Date()) + timer[mode] * 1000;
 
+  timer.remainingTime = getRemainingTime(endTime);
   timer.mode = mode;
 
   document
@@ -143,23 +168,7 @@ function startCountDownTimer() {
     total = timer.remainingTime.total;
     if (total <= 0) {
       clearInterval(interval);
-      switch (timer.mode) {
-        case 'ready':
-          switchMode('hang')
-          startCountDownTimer()
-          break;
-        case 'hang':
-          switchMode('shortBreak')
-          startCountDownTimer()
-          break;
-        case 'shortBreak':
-          switchMode('ready')
-          startCountDownTimer()
-          timer.reps++;
-          break;
-        default:
-          break;
-      }
+      nextInterval();
     }
   }, 1000);
 }
@@ -179,29 +188,63 @@ function startCountUpTimer() {
       seconds : timer.totalTime % 60
     };
     updateClock(timer.time);
-
-    total = timer.remainingTime.total;
-    if (total <= 0) {
-      clearInterval(interval);
-      switch (timer.mode) {
-        case 'ready':
-          switchMode('hang')
-          startCountDownTimer()
-          break;
-        case 'hang':
-          switchMode('shortBreak')
-          startCountDownTimer()
-          break;
-        case 'shortBreak':
-          switchMode('ready')
-          startCountDownTimer()
-          timer.reps++;
-          break;
-        default:
-          break;
-      }
-    }
   }, 1000);
+}
+
+function nextInterval(){
+  if(timer.scenario == 'densityHangs') {
+    let totalTime = timer.totalTime;
+    switch (timer.mode) {
+      case 'ready':
+        switchMode('hang')
+        startCountUpTimer()
+        mainButtonFell.classList.remove('hidden');
+        break;
+      case 'hang':
+        //longBreakHangThreshold -1 (time to press key)
+        if(totalTime < (timer.longBreakHangThreshold-1) || timer.reps >= timer.longBreakRepThreshold){
+          switchMode('longBreak')  
+          timer.sets++;
+          timer.totalSets++;
+        }
+        else{
+          timer.shortBreak = parseInt(totalTime / 2) - 1;
+          switchMode('shortBreak')  
+        }
+        backupProgress();
+        startCountDownTimer()
+        mainButtonFell.classList.add('hidden');
+        
+        break;
+      case 'shortBreak':
+        switchMode('ready')
+        startCountDownTimer()
+        timer.reps++;
+        break;
+      default:
+        break;
+    }
+  }
+  else {
+    switch (timer.mode) {
+      case 'ready':
+        switchMode('hang')
+        startCountDownTimer()
+        break;
+      case 'hang':
+        switchMode('shortBreak')
+        startCountDownTimer()
+        break;
+      case 'shortBreak':
+        switchMode('ready')
+        startCountDownTimer()
+        timer.reps++;
+        break;
+      default:
+        break;
+    }
+
+  }
 }
 
 function updateClock(time) {
@@ -217,12 +260,16 @@ function updateClock(time) {
 }
 
 function updateProgress() {
-  if(timer.sense == 'up'){
-    progressBar.value = timer.time.seconds / 60;
-  }
-  else{
-
-    progressBar.value = 1 - timer.remainingTime.total / timer[timer.mode]
+  try {
+    if(timer.sense == 'up'){
+      progressBar.value = timer.time.seconds / 60;
+    }
+    else{
+      progressBar.value = 1 - timer.remainingTime.total / timer[timer.mode]
+    }
+    
+  } catch (error) {
+    console.log(error + 'when updating progress bar.');
   }
 
 }
@@ -261,3 +308,16 @@ function pauseTimer() {
   mainButtonPause.textContent = 'resume';
   mainButtonPause.classList.remove('active');
 }
+
+function breakTimer() {
+  clearInterval(interval);
+  nextInterval();
+}
+
+function backupProgress() {
+  if(!timer.progress[timer.totalSets]){
+    timer.progress[timer.totalSets] = [];
+  }
+  timer.progress[timer.totalSets].push(timer.totalTime);
+}
+
