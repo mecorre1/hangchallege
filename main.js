@@ -22,9 +22,9 @@ const scenarios = {
     ready: 1, //ready will match half of hang after the first hang and will be reset after de 3
     hang: 0, // start at 0. Up count is used.
     shortBreak: 0, //shortBreak is hang/2
-    longBreak: 180,
+    longBreak: 5,
     longBreakHangThreshold: 10, //if hang < longBreakHangThreshold longBreak is triggered
-    longBreakRepThreshold: 3, //if sets >= longBreakSetThreshold longBreak is triggered
+    longBreakRepThreshold: 5, //if sets >= longBreakSetThreshold longBreak is triggered
     maxSetsPerHold : 2,
     scenario:'densityHangs'
   }
@@ -34,6 +34,8 @@ var timer = scenarios['repeaters'];
 timer.progress = [];
 
 let interval; //timer interval, reset at each stop, paused at paused, resumes at resume.
+
+const results = document.querySelector('#hang-time-results');
 
 const modeButtons = document.querySelector('#js-mode-buttons');
 modeButtons.addEventListener('click', handleMode);
@@ -156,6 +158,8 @@ function startCountDownTimer() {
   mainButtonPause.textContent = 'pause';
   mainButtonPause.dataset.action = 'pause';
 
+  timer.sense = 'down';
+
   let {
     total
   } = timer.remainingTime;
@@ -201,6 +205,7 @@ function nextInterval(){
         mainButtonFell.classList.remove('hidden');
         break;
       case 'hang':
+        backupProgress();
         //longBreakHangThreshold -1 (time to press key)
         if(totalTime < (timer.longBreakHangThreshold-1) || timer.reps >= timer.longBreakRepThreshold){
           switchMode('longBreak')  
@@ -208,15 +213,19 @@ function nextInterval(){
           timer.totalSets++;
         }
         else{
-          timer.shortBreak = parseInt(totalTime / 2) - 1;
+          timer.shortBreak = parseInt(totalTime / 2) - (1+timer.ready);
           switchMode('shortBreak')  
         }
-        backupProgress();
         startCountDownTimer()
         mainButtonFell.classList.add('hidden');
         
         break;
       case 'shortBreak':
+        switchMode('ready')
+        startCountDownTimer()
+        timer.reps++;
+        break;
+      case 'longBreak':
         switchMode('ready')
         startCountDownTimer()
         timer.reps++;
@@ -319,5 +328,21 @@ function backupProgress() {
     timer.progress[timer.totalSets] = [];
   }
   timer.progress[timer.totalSets].push(timer.totalTime);
+  
+  //display results
+  results.textContent = '';
+  let array = timer.progress;
+	let resultTable = document.createElement('table');
+  resultTable.innerHTML = `<table border="1">
+		${array.map((row) => (`
+			<tr>
+				${Object.values(row).map((value) => (
+					`<td>${value}</td>`
+				)).join('')}
+			</tr>
+		`)).join('')}
+	</table>
+`;
+results.appendChild(resultTable);
 }
 
