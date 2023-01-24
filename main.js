@@ -19,11 +19,12 @@ const scenarios = {
   },
   densityHangs: {
     //we will start a bit yolo and the refine
-    ready: 1, //ready will match half of hang after the first hang and will be reset after de 3
+    ready: 5, //ready will match half of hang after the first hang and will be reset after de 3
     hang: 0, // start at 0. Up count is used.
     shortBreak: 0, //shortBreak is hang/2
-    longBreak: 5,
-    longBreakHangThreshold: 10, //if hang < longBreakHangThreshold longBreak is triggered
+    longBreak: 5, //for testing
+    //longBreak: 180, //for real
+    longBreakHangThreshold: 2, //if hang < longBreakHangThreshold longBreak is triggered
     longBreakRepThreshold: 5, //if sets >= longBreakSetThreshold longBreak is triggered
     maxSetsPerHold : 2,
     scenario:'densityHangs'
@@ -150,6 +151,8 @@ function switchMode(mode) {
   document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
   document.body.style.backgroundColor = `var(--${mode})`;
 
+  document.querySelector(`[data-sound="${timer.mode}"]`).play();
+  
   updateClock(timer.remainingTime);
 }
 
@@ -206,15 +209,16 @@ function nextInterval(){
         break;
       case 'hang':
         backupProgress();
+        timer.totalSets++;
         //longBreakHangThreshold -1 (time to press key)
         if(totalTime < (timer.longBreakHangThreshold-1) || timer.reps >= timer.longBreakRepThreshold){
           switchMode('longBreak')  
-          timer.sets++;
-          timer.totalSets++;
+          timer.sets=0;
         }
         else{
           timer.shortBreak = parseInt(totalTime / 2) - (1+timer.ready);
           switchMode('shortBreak')  
+          timer.sets++;
         }
         startCountDownTimer()
         mainButtonFell.classList.add('hidden');
@@ -332,15 +336,18 @@ function backupProgress() {
   //display results
   results.textContent = '';
   let array = timer.progress;
+  let i = 1;
 	let resultTable = document.createElement('table');
   resultTable.innerHTML = `<table border="1">
 		${array.map((row) => (`
 			<tr>
+        <td>Round #${array.indexOf(row)+1}</td>
 				${Object.values(row).map((value) => (
 					`<td>${value}</td>`
 				)).join('')}
 			</tr>
-		`)).join('')}
+		`)).join('')    
+    }
 	</table>
 `;
 results.appendChild(resultTable);
