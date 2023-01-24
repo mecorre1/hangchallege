@@ -209,16 +209,16 @@ function nextInterval(){
         break;
       case 'hang':
         backupProgress();
-        timer.totalSets++;
         //longBreakHangThreshold -1 (time to press key)
         if(totalTime < (timer.longBreakHangThreshold-1) || timer.reps >= timer.longBreakRepThreshold){
           switchMode('longBreak')  
-          timer.sets=0;
+          timer.reps=0;
+          timer.totalSets++;
         }
         else{
           timer.shortBreak = parseInt(totalTime / 2) - (1+timer.ready);
           switchMode('shortBreak')  
-          timer.sets++;
+          timer.reps++;
         }
         startCountDownTimer()
         mainButtonFell.classList.add('hidden');
