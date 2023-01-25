@@ -22,8 +22,8 @@ const scenarios = {
     ready: 5, //ready will match half of hang after the first hang and will be reset after de 3
     hang: 0, // start at 0. Up count is used.
     shortBreak: 0, //shortBreak is hang/2
-    longBreak: 5, //for testing
-    //longBreak: 180, //for real
+    //longBreak: 5, //for testing
+    longBreak: 180, //for real
     longBreakHangThreshold: 2, //if hang < longBreakHangThreshold longBreak is triggered
     longBreakRepThreshold: 5, //if sets >= longBreakSetThreshold longBreak is triggered
     maxSetsPerHold : 2,
@@ -100,6 +100,17 @@ mainButtonFell.addEventListener('click', () => {
   }
 });
 
+//trigger breakTimer when clicking of fell button or tapping the space bar
+const mainButtonSkip = document.getElementById('js-btn-skip');
+mainButtonSkip.addEventListener('click', () => {
+  const {
+    action
+  } = mainButtonSkip.dataset;
+  if (action === 'skip') {
+    skipTimer();
+  }
+});
+
 document.addEventListener('keyup', (e) => {
   if (e.key === ' ' && !mainButtonFell.classList.contains('hidden')) {
     e.preventDefault();
@@ -117,6 +128,7 @@ function handleScenario(event) {
   if (!scenario) return
 
   timer = scenarios[scenario]
+  timer.greatTotal = 0;
 
   stopTimer();
   switchMode('ready');
@@ -174,7 +186,6 @@ function startCountDownTimer() {
 
     total = timer.remainingTime.total;
     if (total <= 0) {
-      clearInterval(interval);
       nextInterval();
     }
   }, 1000);
@@ -199,6 +210,9 @@ function startCountUpTimer() {
 }
 
 function nextInterval(){
+  //we clear the current interval when going to next.
+  clearInterval(interval);
+  
   if(timer.scenario == 'densityHangs') {
     let totalTime = timer.totalTime;
     switch (timer.mode) {
@@ -210,7 +224,7 @@ function nextInterval(){
       case 'hang':
         backupProgress();
         //longBreakHangThreshold -1 (time to press key)
-        if(totalTime < (timer.longBreakHangThreshold-1) || timer.reps >= timer.longBreakRepThreshold){
+        if(totalTime < (timer.longBreakHangThreshold-1) || timer.reps >= (timer.longBreakRepThreshold-1)){
           switchMode('longBreak')  
           timer.reps=0;
           timer.totalSets++;
@@ -227,12 +241,10 @@ function nextInterval(){
       case 'shortBreak':
         switchMode('ready')
         startCountDownTimer()
-        timer.reps++;
         break;
       case 'longBreak':
         switchMode('ready')
         startCountDownTimer()
-        timer.reps++;
         break;
       default:
         break;
@@ -273,6 +285,7 @@ function updateClock(time) {
 }
 
 function updateProgress() {
+  timer.greatTotal++;
   try {
     if(timer.sense == 'up'){
       progressBar.value = timer.time.seconds / 60;
@@ -303,6 +316,7 @@ function getRemainingTime(endTime) {
 }
 
 function stopTimer() {
+  //clear current interval. Stop counting.
   clearInterval(interval);
 
   document.querySelector(`[data-mode="ready"]`).click();
@@ -316,6 +330,7 @@ function stopTimer() {
 }
 
 function pauseTimer() {
+  //clear current interval. Stop counting.
   clearInterval(interval);
   mainButtonPause.dataset.action = 'resume';
   mainButtonPause.textContent = 'resume';
@@ -323,7 +338,10 @@ function pauseTimer() {
 }
 
 function breakTimer() {
-  clearInterval(interval);
+  nextInterval();
+}
+
+function skipTimer() {
   nextInterval();
 }
 
