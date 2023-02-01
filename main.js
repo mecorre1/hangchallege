@@ -24,7 +24,7 @@ const scenarios = {
     shortBreak: 0, //shortBreak is hang/2
     //longBreak: 5, //for testing
     longBreak: 180, //for real
-    longBreakHangThreshold: 2, //if hang < longBreakHangThreshold longBreak is triggered
+    longBreakHangThreshold: 10, //if hang < longBreakHangThreshold longBreak is triggered
     longBreakRepThreshold: 5, //if sets >= longBreakSetThreshold longBreak is triggered
     maxSetsPerHold : 2,
     scenario:'densityHangs'
